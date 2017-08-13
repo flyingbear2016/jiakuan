@@ -27,7 +27,7 @@
 		<scope>compile</scope>
 		<!-- Spring 预设会使用 Commons Logging -->
 		<!-- 但是想要使用 SLF4j 做 Logging -->
-		<!-- 就得踢掉 Spring 里的 Commons Logging -->
+		<!-- 就得去掉 Spring 里的 Commons Logging -->
 		<exclusions>
 			<exclusion>
 				<groupId>commons-logging</groupId>
