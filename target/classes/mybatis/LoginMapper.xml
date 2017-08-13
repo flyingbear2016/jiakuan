@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.flyhorse.webapps.dao.LoginDao">
+
+    <select id="queryLoginInfo" resultType="java.util.Map">
+       select * from account  where id = #{ids,jdbcType=BIGINT} 
+       
+    </select>
+    
+    <select id="getBalanceList" resultType="java.util.Map">
+       select * from account  
+       
+    </select>
+    
+    <update id="transOut">
+       update account set balance = balance - #{money,jdbcType=INTEGER}  where id =#{outId,jdbcType=BIGINT}
+    </update>
+    
+    <update id="transIn">
+       update account set balance = balance + #{money,jdbcType=INTEGER}  where id =#{inId,jdbcType=BIGINT}
+    </update>
+    
+    
+
+</mapper>

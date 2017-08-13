@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+        	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
+        	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+        	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd 
+        	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd"
+        	default-autowire="byName" default-lazy-init="false">
+
+	<context:annotation-config />
+    
+    <context:component-scan base-package="com.flyhorse.webapps" />
+    
+    <!-- 读取配置文件 -->
+	<bean class="com.flyhorse.frame.utils.PropertiesUtil">
+		<property name="location">
+			<value>classpath:path.properties</value>
+		</property>
+	</bean>
+ 
+	
+    <bean id="nonDefault" class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">    
+        <property name="staticField" value="com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT" />    
+    </bean>  
+	<bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper">
+		<property name="serializationInclusion" ref="nonDefault"></property>
+	</bean>
+	<bean id="jsonNodeFactory" class="com.fasterxml.jackson.databind.node.JsonNodeFactory">
+		<constructor-arg index="0" name="bigDecimalExact" value="true"/>
+	</bean>
+	
+	<!-- 读取配置文件 -->
+    <!-- <context:property-placeholder location="classpath:db.properties"/> -->
+	
+	<!-- <util:properties id="dbPropertiesConfig" location="classpath:db.properties" /> -->
+    
+    <!-- 创建连接池 -->    	
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <!-- <property name="driverClassName" value="${jdbc.driverClassName}" />
+        <property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />   
+		<property name="password" value="${jdbc.password}" /> 
+        <property name="maxActive" value="${jdbc.maxActive}" /> -->
+        
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/springdemo?characterEncoding=UTF-8" />
+		<property name="username" value="root" />   
+		<property name="password" value="admin" /> 
+        <property name="maxActive" value="100" />
+        
+        <!-- <property name="driverClassName" value="#{dbPropertiesConfig['jdbc.driverClassName']}" />
+        <property name="url" value="#{dbPropertiesConfig['jdbc.url']}" />
+		<property name="username" value="#{dbPropertiesConfig['jdbc.username']}" />   
+		<property name="password" value="#{dbPropertiesConfig['jdbc.password']}" /> 
+        <property name="maxActive" value="#{dbPropertiesConfig['jdbc.maxActive']}" /> -->
+    </bean>
+    
+    <!-- 自动扫描了所有的XxxxMapper.xml对应的mapper接口文件，这样就不用一个一个手动配置Mpper的映射了，只要Mapper接口类和Mapper映射文件对应起来就可以了。 -->  
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">  
+        <property name="basePackage" value="com.flyhorse.webapps.dao" />  
+    </bean>
+    <!-- 配置Mybatis的文件 ，mapperLocations配置**Mapper.xml文件位置，configLocation配置mybatis-config文件位置-->  
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">  
+        <property name="dataSource" ref="dataSource" />  
+        <property name="mapperLocations" value="classpath*:mybatis/*.xml"/> 
+        <property name="configLocation" value="classpath:spring-mybatis.xml" />  
+    </bean>    
+    
+    
+    
+    <!-- 定义service扫描包 -->
+	<context:component-scan base-package="com.flyhorse.webapps">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+    <!-- 由spring管理mybatis的事物 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- 使用annotation定义事务-->
+	<tx:annotation-driven transaction-manager="transactionManager" order="2"/>
+</beans>
